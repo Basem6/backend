@@ -335,22 +335,7 @@ router.get("/alldata", async (req, res) => {
 });
 
 // ============ GET USER ============
-router.get("/me", async (req, res) => {
-    try {
-        const token = req.cookies.authToken;
-        
-        if (!token) {
-            return res.status(401).json({ success: false });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.userId);
-        
-        res.json({ success: true, user });
-    } catch (error) {
-        res.status(401).json({ success: false });
-    }
-});
+router.get("/me", verifyToken );
 
 // ============ LOGOUT ============
 router.post("/logout", (req, res) => {
