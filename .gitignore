@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # .gitignore
 .env
 .env.local
 node_modules/
+=======
+node_modules
+>>>>>>> 852ca0189d3ed84152977a398779d53e742dcee7
