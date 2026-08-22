@@ -335,7 +335,29 @@ router.get("/alldata", async (req, res) => {
 });
 
 // ============ GET USER ============
-router.get("/me", verifyToken );
+router.get("/me", verifyToken, async (req, res) => {
+try {
+    const user = await User.findById(req.userId).select("-password");
+
+    if (!user) {
+    return res.status(404).json({
+        success: false,
+        message: "المستخدم غير موجود",
+    });
+    }
+
+    res.json({
+    success: true,
+    user,
+    });
+} catch (error) {
+    res.status(500).json({
+    success: false,
+    message: "حدث خطأ في السيرفر",
+    error: error.message,
+    });
+}
+});
 
 // ============ LOGOUT ============
 router.post("/logout", (req, res) => {
