@@ -190,7 +190,8 @@ router.post("/login", async (req, res) => {
         });
         res.status(200).json({
             message: "تم تسجيل الدخول بنجاح",
-            user: user
+            user: user,
+            token,
         });
 
     } catch (error) {
@@ -201,7 +202,15 @@ router.post("/login", async (req, res) => {
 
 // ============ GOOGLE LOGIN ============
 router.post("/google", async (req, res) => {
-    const { code, redirectUri } = req.body;
+    const { code } = req.body;
+    const redirectUri = process.env.GOOGLE_REDIRECT_URI || req.body.redirectUri;
+
+    if (!code || !redirectUri) {
+        return res.status(400).json({
+            success: false,
+            message: "Google authorization code and redirect URI are required",
+        });
+    }
 
     try {
         const response = await axios.post(
@@ -255,15 +264,10 @@ router.post("/google", async (req, res) => {
             { expiresIn: '7d' }
         );
 
-        res.cookie('authToken', token, {
-            httpOnly: true,
-            secure:true,
-            sameSite: 'none',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
         res.status(200).json({
             success: true,
-            user: user
+            user: user,
+            token,
         });
 
     } catch (error) {
@@ -319,15 +323,9 @@ router.post("/google/complete", async (req, res) => {
             { expiresIn: "7d" }
         );
 
-        res.cookie("authToken", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        });
-
         return res.status(201).json({
             success: true,
+            token,
             user: {
                 id: user._id,
                 fullName: user.fullName,

@@ -43,12 +43,13 @@ const allowedOrigins = [
 "http://localhost:3000",
 process.env.FRONTEND_URL,
 ].filter(Boolean);
-//33
+
+const isAllowedOrigin = (origin) => !origin || allowedOrigins.includes(origin);
 
 app.use(
 cors({
     origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin)) {
         callback(null, true);
     } else {
         callback(new Error("Not allowed by CORS"));
@@ -104,7 +105,13 @@ Socket.IO
 ========================= */
 const io = new Server(server, {
 cors: {
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+        callback(null, true);
+    } else {
+        callback(new Error("Not allowed by CORS"));
+    }
+    },
     credentials: true,
 },
 });
@@ -206,5 +213,5 @@ Start Server
 ========================= */
 
 server.listen(PORT, "0.0.0.0", () => {
-console.log(`🚀 Server running on http://localhost:${PORT}`);
+console.log(`🚀 Server running on ${process.env.BACKEND_URL || `http://localhost:${PORT}`}`);
 });

@@ -6,16 +6,23 @@ function verifyJwt(token) {
 }
 
 const verifyToken = (req, res, next) => {
-    const token = req.cookies.authToken; 
+    const cookieToken = req.cookies?.authToken;
+    const authorization = req.get("Authorization");
+    const bearerToken = authorization?.startsWith("Bearer ")
+        ? authorization.slice("Bearer ".length).trim()
+        : null;
+    const token = bearerToken || cookieToken;
+
     if (!token) {
-        return res.status(401).json({ success: false, message: "No token" });
+        return res.status(401).json({ success: false, message: "Authentication required" });
     }
+
     try {
         const decoded = verifyJwt(token);
         req.userId = decoded.userId;
         next();
     } catch (error) {
-        res.status(401).json({ success: false, message: "Invalid token" });
+        return res.status(401).json({ success: false, message: "Invalid or expired token" });
     }
 };
 
