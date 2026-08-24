@@ -104,14 +104,16 @@ const server = http.createServer(app);
 Socket.IO
 ========================= */
 const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
+cors: {
+    origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+        callback(null, true);
+    } else {
+        callback(new Error("Not allowed by CORS"));
+    }
+    },
     credentials: true,
-  },
-
-  transports: ["websocket", "polling"],
-
-  allowUpgrades: true,
+},
 });
 
 const activeUsers = new Map(); // userId -> { socketId, conversationIds }
