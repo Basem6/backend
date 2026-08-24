@@ -5,6 +5,8 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Freelancer = require('../models/Freelancer');
+const Client = require('../models/Client');
 const verifyToken = require('../middleware/auth');
 const { updateProfileImage } = require('../controls/user');
 
@@ -15,10 +17,10 @@ router.patch("/profile/image", verifyToken, updateProfileImage);
 // ============ REGISTER ============
 router.post("/register", async (req, res) => {
     try {
-        const { fullName, age, email, password , role } = req.body;
+        const { fullName, age, email, password, role } = req.body;
 
         // 1️⃣ Validate required fields
-        if (!fullName || !age || !email || !password) {
+        if (!fullName || !age || !email || !password || !role) {
             return res.status(400).json({
                 success: false,
                 message: "Please provide all required fields",
@@ -26,7 +28,8 @@ router.post("/register", async (req, res) => {
                     fullName: !fullName,
                     age: !age,
                     email: !email,
-                    password: !password
+                    password: !password,
+                    role: !role
                 }
             });
         }
@@ -61,6 +64,13 @@ router.post("/register", async (req, res) => {
             });
         }
 
+        if (!["freelancer", "client"].includes(role)) {
+            return res.status(400).json({
+                success: false,
+                message: "Role must be either 'freelancer' or 'client'"
+            });
+        }
+
         // 3️⃣ Check email
         console.log(`🔍 Checking email: ${email}`);
         const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -79,17 +89,20 @@ router.post("/register", async (req, res) => {
         console.log("🔐 Hashing password...");
         const hashedPassword = await bcrypt.hash(password, 12);
 
-        // 5️⃣ Create new user
-        const newUser = new User({
+        // 5️⃣ Create new user (declare outside to avoid scope issues)
+        let savedUser;
+        const UserModel = role === "freelancer" ? Freelancer : Client;
+
+        const newUser = new UserModel({
             fullName: fullName.trim(),
             age: ageNum,
             email: email.toLowerCase(),
             role,
             password: hashedPassword,
-            createdAt: new Date(),
+            createdAt: new Date()
         });
 
-        const savedUser = await newUser.save();
+        savedUser = await newUser.save();
         console.log(`✅ User saved: ${savedUser._id}`);
 
         // 6️⃣ Create JWT token
@@ -102,17 +115,19 @@ router.post("/register", async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
+
         res.cookie('authToken', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
+
         // 7️⃣ Send response
         return res.status(201).json({
             success: true,
             message: "Account created successfully",
-            user:savedUser
+            user: savedUser
         });
 
     } catch (error) {
