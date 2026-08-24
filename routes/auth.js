@@ -127,7 +127,9 @@ router.post("/register", async (req, res) => {
         return res.status(201).json({
             success: true,
             message: "Account created successfully",
-            user: savedUser
+            user: savedUser,
+            token
+            
         });
 
     } catch (error) {
@@ -182,8 +184,8 @@ router.post("/login", async (req, res) => {
         );
         res.cookie('authToken', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure:true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
         res.status(200).json({
@@ -255,8 +257,8 @@ router.post("/google", async (req, res) => {
 
         res.cookie('authToken', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
+            secure:true,
+            sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
         res.status(200).json({
