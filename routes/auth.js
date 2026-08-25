@@ -129,7 +129,6 @@ router.post("/register", async (req, res) => {
             message: "Account created successfully",
             user: savedUser,
             token
-            
         });
 
     } catch (error) {
@@ -248,6 +247,7 @@ router.post("/google", async (req, res) => {
             return res.status(200).json({
                 success: true,
                 isNewUser: true,
+                token,
                 message: "Choose an account type to complete registration",
                 googleData: {
                     fullName: googleUser.name,
@@ -257,12 +257,18 @@ router.post("/google", async (req, res) => {
                 },
             });
         }
-
         const token = jwt.sign(
             { userId: user._id, email: user.email , role:user.role},
             process.env.JWT_SECRET,
             { expiresIn: '7d' }
         );
+
+        res.cookie('authToken', token, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "none",
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
 
         res.status(200).json({
             success: true,

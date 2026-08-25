@@ -77,13 +77,13 @@ app.use("/api/auth", auth);
 app.use("/client", client);
 app.use("/api/chat", chat);
 
-app.use(
+app.patch(
 "/ubdate/personal",
 verifyToken,
 updateuser
 );
 
-app.use(
+app.patch(
 "/api/auth/profile/image",
 verifyToken,
 updateProfileImage
