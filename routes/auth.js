@@ -201,11 +201,7 @@ router.post("/login", async (req, res) => {
 
 // ============ GOOGLE LOGIN ============
 router.post("/google", async (req, res) => {
-    const { code } = req.body;
-
-    const redirectUri =
-        process.env.GOOGLE_REDIRECT_URI || req.body.redirectUri;
-
+    const { code, redirectUri } = req.body;
     if (!code || !redirectUri) {
         return res.status(400).json({
             success: false,
