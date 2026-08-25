@@ -333,8 +333,8 @@ router.post("/google/complete", async (req, res) => {
             age: ageNum,
             email: email.toLowerCase(),
             role,
+            image,
             googleId,
-            password: hashedPassword,
             createdAt: new Date()
         });
 
