@@ -202,7 +202,9 @@ router.post("/login", async (req, res) => {
 // ============ GOOGLE LOGIN ============
 router.post("/google", async (req, res) => {
     const { code } = req.body;
-    const redirectUri = process.env.GOOGLE_REDIRECT_URI || req.body.redirectUri;
+
+    const redirectUri =
+        process.env.GOOGLE_REDIRECT_URI || req.body.redirectUri;
 
     if (!code || !redirectUri) {
         return res.status(400).json({
@@ -212,6 +214,7 @@ router.post("/google", async (req, res) => {
     }
 
     try {
+        // 1. Exchange Google authorization code
         const response = await axios.post(
             "https://oauth2.googleapis.com/token",
             {
@@ -225,10 +228,13 @@ router.post("/google", async (req, res) => {
 
         const { access_token } = response.data;
 
+        // 2. Get Google user
         const userResponse = await axios.get(
             "https://www.googleapis.com/oauth2/v2/userinfo",
             {
-                headers: { Authorization: `Bearer ${access_token}` },
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
             }
         );
 
@@ -237,17 +243,20 @@ router.post("/google", async (req, res) => {
         if (!googleUser.email || !googleUser.name) {
             return res.status(400).json({
                 success: false,
-                message: "بيانات جوجل غير كاملة"
+                message: "بيانات جوجل غير كاملة",
             });
         }
 
-        const user = await User.findOne({ email: googleUser.email });
+        // 3. Find existing user
+        const user = await User.findOne({
+            email: googleUser.email.toLowerCase(),
+        });
 
+        // 4. New Google user
         if (!user) {
             return res.status(200).json({
                 success: true,
                 isNewUser: true,
-                token,
                 message: "Choose an account type to complete registration",
                 googleData: {
                     fullName: googleUser.name,
@@ -257,34 +266,39 @@ router.post("/google", async (req, res) => {
                 },
             });
         }
+
+        // 5. Existing user -> create JWT
         const token = jwt.sign(
-            { userId: user._id, email: user.email , role:user.role},
+            {
+                userId: user._id,
+                email: user.email,
+                role: user.role,
+            },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            {
+                expiresIn: "7d",
+            }
         );
 
-        res.cookie('authToken', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            user: user,
+            isNewUser: false,
+            user,
             token,
         });
 
     } catch (error) {
-        console.error("Google auth error:", error);
-        res.status(401).json({
+        console.error(
+            "Google auth error:",
+            error.response?.data || error.message
+        );
+
+        return res.status(401).json({
             success: false,
-            message: "فشل الدخول مع جوجل"
+            message: "فشل الدخول مع جوجل",
         });
     }
 });
-
 // ============ COMPLETE GOOGLE REGISTRATION ============
 router.post("/google/complete", async (req, res) => {
     try {
