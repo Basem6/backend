@@ -338,17 +338,15 @@ router.post("/google/complete", async (req, res) => {
         });
 
         const token = jwt.sign(
-            { userId: user._id, email: user.email, role: user.role },
+            {
+                userId: user._id,
+                email: user.email,
+                role: user.role,
+            },
             process.env.JWT_SECRET,
             { expiresIn: "7d" }
         );
 
-        res.cookie('authToken', token, {
-            httpOnly: true,
-            secure: true,
-            sameSite: "none",
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        });
         return res.status(201).json({
             success: true,
             token,
