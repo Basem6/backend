@@ -2,21 +2,58 @@ const User = require("../models/User");
 
 async function updateuser(req, res) {
     try {
-        const allowed = ["fullName","country", "phone" ,"age","email"];
-        const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)));
+        const allowed = ["fullName", "country", "phone", "age", "email"];
+
+        const updates = Object.fromEntries(
+            Object.entries(req.body).filter(([key]) =>
+                allowed.includes(key)
+            )
+        );
+
+        // phone اختياري، لذلك لا نخزن string فاضية
+        if ("phone" in updates) {
+            if (typeof updates.phone === "string") {
+                updates.phone = updates.phone.trim();
+            }
+
+            if (!updates.phone) {
+                updates.$unset = {
+                    ...(updates.$unset || {}),
+                    phone: ""
+                };
+
+                delete updates.phone;
+            }
+        }
+
         const user = await User.findOneAndUpdate(
-                {_id :req.userId},
-                updates,
-                {
-                    returnDocument: "after",
-                    runValidators: true
-                }
-            ).select("-password");
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-        res.status(200).json({ success: true, user });
+            { _id: req.userId },
+            updates,
+            {
+                new: true,
+                runValidators: true
+            }
+        ).select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            user
+        });
+
     } catch (error) {
         console.error("Update user error:", error);
-        res.status(400).json({ success: false, message: error.message });
+
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
     }
 }
 
