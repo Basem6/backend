@@ -298,8 +298,15 @@ router.post("/google", async (req, res) => {
 // ============ COMPLETE GOOGLE REGISTRATION ============
 router.post("/google/complete", async (req, res) => {
     try {
-        const { fullName, email, image = "", googleId, role } = req.body;
+        const {
+            fullName,
+            email,
+            image = "",
+            googleId,
+            role
+        } = req.body;
 
+        // 1. Validate required fields
         if (!fullName?.trim() || !email?.trim() || !googleId || !role) {
             return res.status(400).json({
                 success: false,
@@ -307,6 +314,7 @@ router.post("/google/complete", async (req, res) => {
             });
         }
 
+        // 2. Validate role
         if (!["client", "freelancer"].includes(role)) {
             return res.status(400).json({
                 success: false,
@@ -314,8 +322,14 @@ router.post("/google/complete", async (req, res) => {
             });
         }
 
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // 3. Check if Google account already exists
         const existingUser = await User.findOne({
-            $or: [{ email: email.toLowerCase().trim() }, { googleId }],
+            $or: [
+                { email: normalizedEmail },
+                { googleId }
+            ],
         });
 
         if (existingUser) {
@@ -325,51 +339,70 @@ router.post("/google/complete", async (req, res) => {
             });
         }
 
-        let savedUser;
-        const UserModel = role === "freelancer" ? Freelancer : Client;
+        // 4. Select model
+        const UserModel =
+            role === "freelancer"
+                ? Freelancer
+                : Client;
 
+        // 5. Create user
         const newUser = new UserModel({
             fullName: fullName.trim(),
-            email: email.toLowerCase(),
+            email: normalizedEmail,
             role,
             image,
             googleId,
             createdAt: new Date()
         });
 
-        savedUser = await newUser.save();
+        // 6. Save user
+        const savedUser = await newUser.save();
+
         console.log(`✅ User saved: ${savedUser._id}`);
 
+        // 7. Create JWT
         const token = jwt.sign(
             {
-                userId: user._id,
-                email: user.email,
-                role: user.role,
+                userId: savedUser._id,
+                email: savedUser.email,
+                role: savedUser.role,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "7d" }
+            {
+                expiresIn: "7d"
+            }
         );
 
+        // 8. Send response
         return res.status(201).json({
             success: true,
             token,
             user: {
-                id: user._id,
-                fullName: user.fullName,
-                email: user.email,
-                image: user.image,
-                role: user.role,
+                id: savedUser._id,
+                fullName: savedUser.fullName,
+                email: savedUser.email,
+                image: savedUser.image,
+                role: savedUser.role,
             },
         });
+
     } catch (error) {
-        console.error("Google registration completion error:", error);
-        return res.status(error.code === 11000 ? 409 : 500).json({
+        console.error(
+            "Google registration completion error:",
+            error
+        );
+
+        return res.status(
+            error.code === 11000 ? 409 : 500
+        ).json({
             success: false,
-            message: error.code === 11000 ? "This Google account is already registered" : "Failed to complete Google registration",
+            message:
+                error.code === 11000
+                    ? "This Google account is already registered"
+                    : "Failed to complete Google registration",
         });
     }
 });
-
 // ============ GET ALL DATA ============
 router.get("/alldata", async (req, res) => {
     const users = await User.find();
