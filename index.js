@@ -130,7 +130,7 @@ io.use((socket, next) => {
 
 io.on("connection", async (socket) => {
     console.log("🟢 User connected:", socket.userId);
-    
+    socket.join(`user:${socket.userId}`);
     await User.findByIdAndUpdate(socket.userId, {
         online: true,
         lastSeen: new Date().toISOString(),
@@ -154,7 +154,6 @@ io.on("connection", async (socket) => {
     });
 
     socket.on("send-message", async (payload, acknowledge) => {
-    console.log("send done")
     try {
         const message = await createMessage(
             payload?.conversationId,
@@ -168,7 +167,37 @@ io.on("connection", async (socket) => {
             ...message.toObject(),
             conversationId,
         };
+
+        // 🔵 إرسال الرسالة لكل الموجودين داخل المحادثة
         io.to(conversationId).emit("message:new", messageData);
+
+        // 🔔 نجيب بيانات المحادثة
+        const conversation = await getConversationForUser(
+            conversationId,
+            socket.userId
+        );
+
+        if (!conversation) {
+            throw new Error("Conversation not found");
+        }
+
+        // 🔔 نحدد المستقبل
+        const receiverId = conversation.participants.find(
+            (id) => String(id) !== String(socket.userId)
+        );
+
+        if (receiverId) {
+            // 🔔 Notification Live
+            io.to(`user:${String(receiverId)}`).emit(
+                "notification:new",
+                {
+                    type: "message",
+                    message: messageData,
+                    senderId: socket.userId,
+                    conversationId,
+                }
+            );
+        }
 
         acknowledge?.({
             success: true,
@@ -176,6 +205,8 @@ io.on("connection", async (socket) => {
         });
 
     } catch (error) {
+        console.error("send-message error:", error);
+
         acknowledge?.({
             success: false,
             message: error.message,
