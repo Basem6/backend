@@ -330,7 +330,6 @@ router.post("/google/complete", async (req, res) => {
 
         const newUser = new UserModel({
             fullName: fullName.trim(),
-            age: ageNum,
             email: email.toLowerCase(),
             role,
             image,
