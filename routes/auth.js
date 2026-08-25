@@ -325,13 +325,21 @@ router.post("/google/complete", async (req, res) => {
             });
         }
 
-        const user = await User.create({
+        let savedUser;
+        const UserModel = role === "freelancer" ? Freelancer : Client;
+
+        const newUser = new UserModel({
             fullName: fullName.trim(),
-            email: email.toLowerCase().trim(),
-            image,
-            googleId,
+            age: ageNum,
+            email: email.toLowerCase(),
             role,
+            googleId,
+            password: hashedPassword,
+            createdAt: new Date()
         });
+
+        savedUser = await newUser.save();
+        console.log(`✅ User saved: ${savedUser._id}`);
 
         const token = jwt.sign(
             {
