@@ -18,7 +18,10 @@ const UserSchema = new mongoose.Schema({
         lowercase: true,
         trim: true,
     },
-
+    savedjob:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Project",
+    },
     password: {
         type: String,
         default: undefined,

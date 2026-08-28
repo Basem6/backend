@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
+const Client = require("../models/Client");
 
 function projectQuery() {
     return Project.find().populate("clientId", "fullName email image role").sort({ createdAt: -1 });
@@ -43,23 +44,84 @@ async function getProject(req, res) {
 
 async function createProject(req, res) {
     try {
-        if (req.user?.role && req.user.role !== "client") {
-            return res.status(403).json({ success: false, message: "Only clients can create projects" });
+        // Authorization
+        if (!req.user || req.user.role !== "client") {
+            return res.status(403).json({ 
+                success: false, 
+                message: "Only clients can create projects" 
+            });
         }
+
         const { title, description, category = "", skills = [], budget = 0, deadline } = req.body;
+
+        // Validate title & description
         if (!title?.trim() || !description?.trim()) {
-            return res.status(400).json({ success: false, message: "Title and description are required" });
+            return res.status(400).json({ 
+                success: false, 
+                message: "Title and description are required" 
+            });
         }
+
+        // Validate budget
+        if (typeof budget !== "number" || budget < 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Budget must be a non-negative number" 
+            });
+        }
+
+        // Validate deadline
+        if (deadline) {
+            const deadlineDate = new Date(deadline);
+            if (isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: "Deadline must be a valid future date" 
+                });
+            }
+        }
+
+        // Create project
         const project = await Project.create({
-            title: title.trim(), description: description.trim(), category, skills, budget, deadline, clientId: req.userId,
+            title: title.trim(),
+            description: description.trim(),
+            category,
+            skills: Array.isArray(skills) ? skills.filter(s => s) : [],
+            budget,
+            deadline: deadline || null,
+            clientId: req.userId,
+            status: "open"
         });
-        res.status(201).json({ success: true, project });
+
+        // Update client
+        const updatedClient = await Client.findByIdAndUpdate(
+            req.userId,
+            { $push: { postedProjects: project._id } },
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        if (!updatedClient) {
+            await Project.findByIdAndDelete(project._id);
+            return res.status(404).json({ 
+                success: false, 
+                message: "Client not found" 
+            });
+        }
+
+        res.status(201).json({ 
+            success: true, 
+            project,
+            message: "Project created successfully"
+        });
+
     } catch (error) {
         console.error("Create project error:", error);
-        res.status(400).json({ success: false, message: error.message });
+        res.status(500).json({ 
+            success: false, 
+            message: error.message || "Failed to create project" 
+        });
     }
 }
-
 async function updateProject(req, res) {
     try {
         const allowed = ["title", "description", "category", "skills", "budget", "deadline", "status"];
@@ -76,7 +138,6 @@ async function updateProject(req, res) {
         res.status(400).json({ success: false, message: error.message });
     }
 }
-
 async function deleteProject(req, res) {
     try {
         const project = await Project.findOneAndDelete({ _id: req.params.id, clientId: req.userId });
