@@ -63,24 +63,13 @@ async function createProject(req, res) {
         }
 
         // Validate budget
-        if (typeof budget !== "number" || budget < 0) {
+        if (budget < 0) {
             return res.status(400).json({ 
                 success: false, 
                 message: "Budget must be a non-negative number" 
             });
         }
-
-        // Validate deadline
-        if (deadline) {
-            const deadlineDate = new Date(deadline);
-            if (isNaN(deadlineDate.getTime()) || deadlineDate < new Date()) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: "Deadline must be a valid future date" 
-                });
-            }
-        }
-
+c
         // Create project
         const project = await Project.create({
             title: title.trim(),
