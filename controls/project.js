@@ -63,13 +63,12 @@ async function createProject(req, res) {
         }
 
         // Validate budget
-        if (budget < 0) {
+        if (Number(budget) < 0) {
             return res.status(400).json({ 
                 success: false, 
                 message: "Budget must be a non-negative number" 
             });
         }
-c
         // Create project
         const project = await Project.create({
             title: title.trim(),
