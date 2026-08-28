@@ -45,7 +45,7 @@ async function getProject(req, res) {
 async function createProject(req, res) {
     try {
         // Authorization
-        if (!req.user || req.user.role !== "client") {
+        if (!req.role== "client") {
             return res.status(403).json({ 
                 success: false, 
                 message: "Only clients can create projects" 
