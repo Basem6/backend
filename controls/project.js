@@ -3,9 +3,17 @@ const Project = require("../models/Project");
 const Client = require("../models/Client");
 
 function projectQuery() {
-    return Project.find().populate("clientId", "fullName email image role").sort({ createdAt: -1 });
+return Project.find()
+    .populate("clientId", "fullName email image role")
+    .populate({
+    path: "proposals",
+    populate: {
+        path: "freelancer",
+        select: "fullName image Major location rating portfolio",
+    },
+    })
+    .sort({ createdAt: -1 });
 }
-
 async function listProjects(req, res) {
     try {
         const projects = await projectQuery();
@@ -29,17 +37,50 @@ async function listMyProjects(req, res) {
 }
 
 async function getProject(req, res) {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ success: false, message: "Invalid project id" });
-        }
-        const project = await Project.findById(req.params.id).populate("clientId", "fullName email image role");
-        if (!project) return res.status(404).json({ success: false, message: "Project not found" });
-        res.status(200).json({ success: true, project });
-    } catch (error) {
-        console.error("Get project error:", error);
-        res.status(500).json({ success: false, message: "Failed to load project" });
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid project id",
+      });
     }
+
+    const project = await Project.findById(id)
+      .populate(
+        "clientId",
+        "fullName email image role createdAt"
+      )
+      .populate({
+        path: "proposals",
+        populate: {
+          path: "freelancer",
+          select:
+            "fullName image Major location rating portfolio",
+        },
+      });
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      project,
+    });
+
+  } catch (error) {
+    console.error("Get project error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load project",
+    });
+  }
 }
 
 async function createProject(req, res) {
@@ -110,6 +151,7 @@ async function createProject(req, res) {
         });
     }
 }
+
 async function updateProject(req, res) {
     try {
         const allowed = ["title", "description", "category", "skills", "budget", "deadline", "status"];
@@ -126,6 +168,7 @@ async function updateProject(req, res) {
         res.status(400).json({ success: false, message: error.message });
     }
 }
+
 async function deleteProject(req, res) {
     try {
         const project = await Project.findOneAndDelete({ _id: req.params.id, clientId: req.userId });

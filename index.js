@@ -27,6 +27,7 @@ const {
 updateuser,
 updateProfileImage,
 } = require("./controls/user");
+const Proposal = require("./models/Proposal");
 
 dotenv.config();
 

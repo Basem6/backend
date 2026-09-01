@@ -1,11 +1,5 @@
 const Freelancer = require("../models/Freelancer");
 
-function publicFreelancer(user) {
-    const result = user.toObject();
-    delete result.password;
-    return result;
-}
-
 async function listFreelancers(req, res) {
     try {
         const freelancers = await Freelancer.find().select("-password")
