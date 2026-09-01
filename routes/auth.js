@@ -284,11 +284,12 @@ router.post("/google", async (req, res) => {
         });
 
     } catch (error) {
-        console.error(
-            "Google auth error:",
-            error.response?.data || error.message
-        );
 
+    console.error("========== GOOGLE AUTH ERROR ==========");
+    console.error("Message:", error.message);
+    console.error("Google response:", error.response?.data);
+    console.error("Status:", error.response?.status);
+    console.error("======================================");
         return res.status(401).json({
             success: false,
             message: "فشل الدخول مع جوجل",
