@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const User = require("./User");
 
 const FreelancerSchema = new mongoose.Schema({
+    specialty: {
+        type: String,
+        trim: true,
+        default: "",
+    },
     skills: [{ type: String, trim: true }],
     hourlyRate: { type: Number, min: 0 },
     bio: { type: String, default: "", trim: true, maxlength: 2000 },

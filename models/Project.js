@@ -41,6 +41,11 @@ const ProjectSchema = new mongoose.Schema({
         required: true,
         index: true,
     },
+    freelancerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Freelancer",
+    default: null,
+},
 }, {
     timestamps: true,
     toJSON: { virtuals: true },

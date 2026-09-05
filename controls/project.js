@@ -1,26 +1,46 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Client = require("../models/Client");
-
-function projectQuery() {
-return Project.find()
-    .populate("clientId", "fullName email image role")
-    .populate({
-    path: "proposals",
-    populate: {
-        path: "freelancer",
-        select: "fullName image Major location rating portfolio",
-    },
-    })
-    .sort({ createdAt: -1 });
+function projectQuery(clientId) {
+    return Project.find(clientId ? { clientId } : {})
+        .populate({
+            path: "clientId",
+            match: { _id: { $exists: true } },
+            select: "fullName email image role",
+        })
+        .populate({
+            path: "freelancerId",
+            select: "fullName  image major",
+        })
+        .populate({
+            path: "proposals",
+            populate: {
+                path: "freelancer",
+                select: "fullName image Major location rating portfolio",
+            },
+        })
+        .sort({ createdAt: -1 });
 }
+
 async function listProjects(req, res) {
     try {
-        const projects = await projectQuery();
-        res.status(200).json({ success: true, projects });
+        const projects = await projectQuery(req.userId);
+
+        const validProjects = projects.filter(
+            (project) => project.clientId !== null
+        );
+
+        res.status(200).json({
+            success: true,
+            projects: validProjects,
+        });
     } catch (error) {
         console.error("List projects error:", error);
-        res.status(500).json({ success: false, message: "Failed to load projects" });
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to load projects",
+        });
     }
 }
 
@@ -51,6 +71,10 @@ async function getProject(req, res) {
       .populate(
         "clientId",
         "fullName email image role createdAt"
+      )
+      .populate(
+        "freelancerId",
+        "fullName  image major"
       )
       .populate({
         path: "proposals",
