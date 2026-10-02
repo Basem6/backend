@@ -1,0 +1,17 @@
+const express = require("express");
+const verifyToken = require("../middleware/auth");
+const { listFreelancers, listMyWorks, getFreelancer, updateFreelancer, addWork, deleteWork } = require("../controls/freelancer");
+const {myproposals , deleteProposal, updateProposal} = require("../controls/proposal");
+
+const router = express.Router();
+router.get("/freelancers",listFreelancers);
+router.get("/freelancers/:id",verifyToken, getFreelancer);
+router.get("/freelancer/myworks", verifyToken, listMyWorks);
+router.get("/freelancer/myoffers", verifyToken, myproposals);
+router.delete("/freelancer/deleteProposal/:id", verifyToken, deleteProposal);
+router.patch("/freelancer/updateProposal/:id", verifyToken, updateProposal);
+router.patch("/freelance/update/technical", verifyToken, updateFreelancer);
+router.post("/freelancer/work", verifyToken, addWork);
+router.delete("/freelancer/deletework/:id", verifyToken, deleteWork);
+
+module.exports = router;
