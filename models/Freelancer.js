@@ -35,7 +35,7 @@ const FreelancerSchema = new mongoose.Schema({
             language: {
                 type: String,
                 trim: true,
-                required: true,
+            
             },
 
             proficiency: {

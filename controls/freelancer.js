@@ -40,6 +40,11 @@ async function updateFreelancer(req, res) {
             "specialty",
             "major",
             "bio",
+            "hourlyRate",
+            "languages",
+            "education",
+            "experience",
+            "portfolio"
         ];
 
         const updates = Object.fromEntries(
