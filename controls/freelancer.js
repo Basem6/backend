@@ -148,4 +148,4 @@ async function updateWork(req, res) {
         res.status(500).json({ success: false, message: "Failed to update work" });
     }
 }
-module.exports = { listFreelancers, listMyWorks, getFreelancer, updateFreelancer,ubdateWork ,addWork, deleteWork };
+module.exports = { listFreelancers, listMyWorks, getFreelancer, updateFreelancer,updateWork ,addWork, deleteWork };
