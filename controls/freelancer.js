@@ -118,14 +118,33 @@ async function deleteWork(req, res) {
 
 async function updateWork(req, res) {
     try {
-        // عدّل الحقول دي حسب الـ schema بتاعك
+        // ضيف هنا أي حقل تاني موجود في الـ portfolio schema بتاعك
         const allowedFields = ["title", "description", "image", "link"];
 
         const updates = {};
+
         for (const key of allowedFields) {
             if (req.body[key] !== undefined) {
                 updates[`portfolio.$.${key}`] = req.body[key];
             }
+        }
+
+        // Skills: لازم array of strings
+        if (req.body.skills !== undefined) {
+            if (!Array.isArray(req.body.skills)) {
+                return res.status(400).json({ success: false, message: "Skills must be an array" });
+            }
+
+            const skills = [
+                ...new Set(
+                    req.body.skills
+                        .filter((skill) => typeof skill === "string")
+                        .map((skill) => skill.trim())
+                        .filter(Boolean)
+                ),
+            ];
+
+            updates["portfolio.$.skills"] = skills;
         }
 
         if (Object.keys(updates).length === 0) {
