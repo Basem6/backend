@@ -12,7 +12,7 @@ router.delete("/freelancer/deleteProposal/:id", verifyToken, deleteProposal);
 router.patch("/freelancer/updateProposal/:id", verifyToken, updateProposal);
 router.patch("/freelance/update/technical", verifyToken, updateFreelancer);
 router.post("/freelancer/work", verifyToken, addWork);
-router.post("/freelancer/ubdatework/:id", verifyToken, updateWork);
+router.patch("/freelancer/ubdatework/:id", verifyToken, updateWork);
 router.delete("/freelancer/deletework/:id", verifyToken, deleteWork);
 
 module.exports = router;
