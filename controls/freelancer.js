@@ -116,4 +116,36 @@ async function deleteWork(req, res) {
     }
 }
 
-module.exports = { listFreelancers, listMyWorks, getFreelancer, updateFreelancer, addWork, deleteWork };
+async function updateWork(req, res) {
+    try {
+        // عدّل الحقول دي حسب الـ schema بتاعك
+        const allowedFields = ["title", "description", "image", "link"];
+
+        const updates = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) {
+                updates[`portfolio.$.${key}`] = req.body[key];
+            }
+        }
+
+        if (Object.keys(updates).length === 0) {
+            return res.status(400).json({ success: false, message: "No valid fields to update" });
+        }
+
+        const freelancer = await Freelancer.findOneAndUpdate(
+            { _id: req.userId, "portfolio._id": req.params.id },
+            { $set: updates },
+            { new: true, runValidators: true }
+        ).select("-password");
+
+        if (!freelancer) {
+            return res.status(404).json({ success: false, message: "Work not found" });
+        }
+
+        res.status(200).json({ success: true, freelancer });
+    } catch (error) {
+        console.error("Update work error:", error);
+        res.status(500).json({ success: false, message: "Failed to update work" });
+    }
+}
+module.exports = { listFreelancers, listMyWorks, getFreelancer, updateFreelancer,ubdateWork ,addWork, deleteWork };

@@ -1,6 +1,6 @@
 const express = require("express");
 const verifyToken = require("../middleware/auth");
-const { listFreelancers, listMyWorks, getFreelancer, updateFreelancer, addWork, deleteWork } = require("../controls/freelancer");
+const { listFreelancers, listMyWorks, getFreelancer, updateFreelancer,ubdateWork , addWork, deleteWork } = require("../controls/freelancer");
 const {myproposals , deleteProposal, updateProposal} = require("../controls/proposal");
 
 const router = express.Router();
@@ -12,6 +12,7 @@ router.delete("/freelancer/deleteProposal/:id", verifyToken, deleteProposal);
 router.patch("/freelancer/updateProposal/:id", verifyToken, updateProposal);
 router.patch("/freelance/update/technical", verifyToken, updateFreelancer);
 router.post("/freelancer/work", verifyToken, addWork);
+router.post("/freelancer/ubdatework/:id", verifyToken, ubdateWork);
 router.delete("/freelancer/deletework/:id", verifyToken, deleteWork);
 
 module.exports = router;
