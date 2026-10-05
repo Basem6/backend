@@ -1,5 +1,5 @@
 const Freelancer = require("../models/Freelancer");
-
+const cleanStringArray =require("../utils/NoRepeat")
 async function listFreelancers(req, res) {
     try {
         const freelancers = await Freelancer.find().select("-password")
@@ -118,8 +118,7 @@ async function deleteWork(req, res) {
 
 async function updateWork(req, res) {
     try {
-        // ضيف هنا أي حقل تاني موجود في الـ portfolio schema بتاعك
-        const allowedFields = ["title", "description", "image", "link"];
+        const allowedFields = ["title", "description", "category", "coverImage", "liveUrl"];
 
         const updates = {};
 
@@ -128,23 +127,16 @@ async function updateWork(req, res) {
                 updates[`portfolio.$.${key}`] = req.body[key];
             }
         }
+        for (const field of ["skills", "tags"]) {
+            if (req.body[field] !== undefined) {
+                if (!Array.isArray(req.body[field])) {
+                    return res
+                        .status(400)
+                        .json({ success: false, message: `${field} must be an array` });
+                }
 
-        // Skills: لازم array of strings
-        if (req.body.skills !== undefined) {
-            if (!Array.isArray(req.body.skills)) {
-                return res.status(400).json({ success: false, message: "Skills must be an array" });
+                updates[`portfolio.$.${field}`] = cleanStringArray(req.body[field]);
             }
-
-            const skills = [
-                ...new Set(
-                    req.body.skills
-                        .filter((skill) => typeof skill === "string")
-                        .map((skill) => skill.trim())
-                        .filter(Boolean)
-                ),
-            ];
-
-            updates["portfolio.$.skills"] = skills;
         }
 
         if (Object.keys(updates).length === 0) {
