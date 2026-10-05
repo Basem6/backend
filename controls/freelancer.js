@@ -86,11 +86,11 @@ async function updateFreelancer(req, res) {
 
 async function addWork(req, res) {
     try {
-        const { title, description = "", category = "", tags = [], coverImage = "", liveUrl = "" } = req.body;
+        const { title, description = "", category = "", skills = [], coverImage = "", liveUrl = "" } = req.body;
         if (!title?.trim()) return res.status(400).json({ success: false, message: "Title is required" });
         const freelancer = await Freelancer.findByIdAndUpdate(
             req.userId,
-            { $push: { portfolio: { title: title.trim(), description, category, tags, coverImage, liveUrl } } },
+            { $push: { portfolio: { title: title.trim(), description, category, skills, coverImage, liveUrl } } },
             { new: true, runValidators: true }
         ).select("-password");
         if (!freelancer) return res.status(404).json({ success: false, message: "Freelancer not found" });
@@ -118,7 +118,7 @@ async function deleteWork(req, res) {
 
 async function updateWork(req, res) {
     try {
-        const allowedFields = ["title", "description", "category", "coverImage", "liveUrl"];
+        const allowedFields = ["title", "description", "category" ,"coverImage", "liveUrl"];
 
         const updates = {};
 
@@ -127,7 +127,7 @@ async function updateWork(req, res) {
                 updates[`portfolio.$.${key}`] = req.body[key];
             }
         }
-        for (const field of ["skills", "tags"]) {
+        for (const field of ["skills"]) {
             if (req.body[field] !== undefined) {
                 if (!Array.isArray(req.body[field])) {
                     return res

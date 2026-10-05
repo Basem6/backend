@@ -167,7 +167,7 @@ const FreelancerSchema = new mongoose.Schema({
                 trim: true,
             },
 
-            tags: [
+            skills: [
                 {
                     type: String,
                     trim: true,
