@@ -118,7 +118,7 @@ async function deleteWork(req, res) {
 
 async function updateWork(req, res) {
     try {
-        const allowedFields = ["title", "description", "category" ,"coverImage", "liveUrl"];
+        const allowedFields = ["title", "description" ,"coverImage", "liveUrl"];
 
         const updates = {};
 
