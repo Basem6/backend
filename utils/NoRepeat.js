@@ -1,4 +1,4 @@
-export const cleanStringArray = (arr) => [
+const cleanStringArray = (arr) => [
     ...new Set(
         arr
             .filter((item) => typeof item === "string")
@@ -6,3 +6,4 @@ export const cleanStringArray = (arr) => [
             .filter(Boolean)
     ),
 ];
+module.exports = {cleanStringArray};
