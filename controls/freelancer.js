@@ -1,5 +1,5 @@
 const Freelancer = require("../models/Freelancer");
-const cleanStringArray =require("../utils/NoRepeat")
+const {cleanStringArray} =require("../utils/NoRepeat")
 async function listFreelancers(req, res) {
     try {
         const freelancers = await Freelancer.find().select("-password")
