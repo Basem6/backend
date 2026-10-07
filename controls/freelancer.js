@@ -155,8 +155,14 @@ async function updateWork(req, res) {
 
         res.status(200).json({ success: true, freelancer });
     } catch (error) {
-        console.error("Update work error:", error);
-        res.status(500).json({ success: false, message: "Failed to update work" });
-    }
+    console.error("Update work error:", error);
+
+    return res.status(500).json({
+        success: false,
+        message: error.message,
+        error: error.name,
+    });
+}
+    
 }
 module.exports = { listFreelancers, listMyWorks, getFreelancer, updateFreelancer,updateWork ,addWork, deleteWork };
