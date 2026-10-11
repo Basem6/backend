@@ -1,10 +1,10 @@
+const dotenv = require("dotenv");
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
 const cookieParser = require("cookie-parser");
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const http = require("http");
 const { Server } = require("socket.io");
 

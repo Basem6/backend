@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Client = require("../models/Client");
+const {sendEmail} = require("../utils/sendEmail")
 function projectQuery(clientId) {
     return Project.find(clientId ? { clientId } : {})
         .populate({
@@ -160,7 +161,36 @@ async function createProject(req, res) {
                 message: "Client not found" 
             });
         }
+        try {
+            await sendEmail({
+                to: updatedClient.email,
+                subject: "Your Job Has Been Published Successfully!",
+                html: `
+                    <div style="font-family: Arial, sans-serif; padding: 24px; color: #222;">
+                        <h2>Hi ${updatedClient.name || "there"}!</h2>
 
+                        <p>
+                            Your job has been successfully published on Hemma.
+                        </p>
+
+                        <h3>${project.title}</h3>
+
+                        <p>
+                            Freelancers can now discover your project
+                            and submit their proposals.
+                        </p>
+
+                        <p>
+                            Thank you for using Hemma!
+                        </p>
+
+                        <p>The Hemma Team</p>
+                    </div>
+                `,
+            });
+        } catch (emailError) {
+            console.error("Failed to send job confirmation email:", emailError);
+        }
         res.status(201).json({ 
             success: true, 
             project,
