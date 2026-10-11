@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Client = require("../models/Client");
-const {sendEmail} = require("../utils/sendEmail")
+const  sendEmail = require("../utils/sendEmail")
 function projectQuery(clientId) {
     return Project.find(clientId ? { clientId } : {})
         .populate({
@@ -167,7 +167,7 @@ async function createProject(req, res) {
                 subject: "Your Job Has Been Published Successfully!",
                 html: `
                     <div style="font-family: Arial, sans-serif; padding: 24px; color: #222;">
-                        <h2>Hi ${updatedClient.name || "there"}!</h2>
+                        <h2>Hi ${updatedClient.fullName || "there"}!</h2>
 
                         <p>
                             Your job has been successfully published on Hemma.
