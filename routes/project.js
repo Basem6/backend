@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get("/projects", listProjects);
 router.get("/my-projects", verifyToken, listMyProjects);
-router.get("/projects/:id", getProject);
+router.get("/projects/:id",verifyToken , getProject);
 router.get("/projects/:id/allproposal", getProposals);
 router.post("/projects/:id/addproposal", verifyToken, addProposal);
 router.post("/projects/:id/choosefreelancer", verifyToken, chooseFreelancer);

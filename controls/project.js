@@ -47,9 +47,7 @@ async function listProjects(req, res) {
 
 async function listMyProjects(req, res) {
     try {
-        const projects = await Project.find({ clientId: req.userId })
-            .populate("clientId", "fullName email image role")
-            .sort({ createdAt: -1 });
+        const projects = await projectQuery(req.userId);
         res.status(200).json({ success: true, projects });
     } catch (error) {
         console.error("List my projects error:", error);
