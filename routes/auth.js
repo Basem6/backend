@@ -9,6 +9,7 @@ const Freelancer = require('../models/Freelancer');
 const Client = require('../models/Client');
 const verifyToken = require('../middleware/auth');
 const { updateProfileImage } = require('../controls/user');
+const { syncFreelancer } = require('../utils/meili');
 
 const router = express.Router();
 
@@ -96,6 +97,7 @@ router.post("/register", async (req, res) => {
 
         savedUser = await newUser.save();
         console.log(`✅ User saved: ${savedUser._id}`);
+        await syncFreelancer(savedUser);
 
         // 6️⃣ Create JWT token
         const token = jwt.sign(
@@ -350,6 +352,7 @@ router.post("/google/complete", async (req, res) => {
 
         // 6. Save user
         const savedUser = await newUser.save();
+        await syncFreelancer(savedUser);
 
         console.log(`✅ User saved: ${savedUser._id}`);
 

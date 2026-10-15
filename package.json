@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "sync:meili": "node scripts/syncMeili.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -21,6 +22,7 @@
     "email-validator": "^2.0.4",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "meilisearch": "^0.62.0",
     "mongoose": "^9.8.0",
     "resend": "^6.32.1",
     "socket.io": "^4.8.3"

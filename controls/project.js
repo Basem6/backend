@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Project = require("../models/Project");
 const Client = require("../models/Client");
 const  sendEmail = require("../utils/sendEmail")
+const { syncJob, deleteJob } = require("../utils/meili");
 function projectQuery(clientId) {
     return Project.find(clientId ? { clientId } : {})
         .populate({
@@ -159,6 +160,7 @@ async function createProject(req, res) {
                 message: "Client not found" 
             });
         }
+        await syncJob(project);
         try {
             await sendEmail({
                 to: updatedClient.email,
@@ -214,6 +216,7 @@ async function updateProject(req, res) {
             { new: true, runValidators: true }
         ).populate("clientId", "fullName email image role");
         if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+        await syncJob(project);
         res.status(200).json({ success: true, project });
     } catch (error) {
         console.error("Update project error:", error);
@@ -225,6 +228,7 @@ async function deleteProject(req, res) {
     try {
         const project = await Project.findOneAndDelete({ _id: req.params.id, clientId: req.userId });
         if (!project) return res.status(404).json({ success: false, message: "Project not found" });
+        await deleteJob(project._id);
         res.status(200).json({ success: true, message: "Project deleted successfully" });
     } catch (error) {
         console.error("Delete project error:", error);

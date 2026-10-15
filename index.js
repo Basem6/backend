@@ -1,4 +1,5 @@
 const dotenv = require("dotenv");
+dotenv.config();
 const dns = require("dns");
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -22,14 +23,13 @@ const auth = require("./routes/auth");
 const client = require("./routes/client");
 const freelancer = require("./routes/freelancer");
 const project = require("./routes/project");
+const search = require("./routes/search");
 
 const {
 updateuser,
 updateProfileImage,
 } = require("./controls/user");
 const Proposal = require("./models/Proposal");
-
-dotenv.config();
 
 const app = express();
 
@@ -77,6 +77,7 @@ res.send("hello basem");
 app.use("/api/auth", auth);
 app.use("/client", client);
 app.use("/api/chat", chat);
+app.use("/api/search", search);
 
 app.patch(
 "/ubdate/personal",

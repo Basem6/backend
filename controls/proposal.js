@@ -2,6 +2,7 @@ const Project = require("../models/Project");
 const Freelancer = require("../models/Freelancer");
 const Client = require("../models/Client");
 const Proposal = require("../models/Proposal");
+const { syncJob } = require("../utils/meili");
 const addProposal = async (req, res) => {
         try {
         const { id } = req.params;
@@ -342,6 +343,7 @@ const chooseFreelancer = async (req, res) => {
         project.status = "in_progress";
         
         await project.save();
+        await syncJob(project);
 
         // Accept selected proposal
         proposal.status = "accepted";

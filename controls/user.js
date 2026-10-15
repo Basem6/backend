@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { syncFreelancer } = require("../utils/meili");
 
 async function updateuser(req, res) {
     try {
@@ -41,6 +42,8 @@ async function updateuser(req, res) {
                 message: "User not found"
             });
         }
+
+        await syncFreelancer(user);
 
         res.status(200).json({
             success: true,
@@ -86,6 +89,8 @@ async function updateProfileImage(req, res) {
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
+
+        await syncFreelancer(user);
 
         return res.status(200).json({ success: true, user });
     } catch (error) {

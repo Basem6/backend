@@ -1,5 +1,6 @@
 const Freelancer = require("../models/Freelancer");
 const {cleanStringArray} =require("../utils/NoRepeat")
+const { syncFreelancer } = require("../utils/meili");
 async function listFreelancers(req, res) {
     try {
         const freelancers = await Freelancer.find().select("-password")
@@ -68,6 +69,8 @@ async function updateFreelancer(req, res) {
             });
         }
 
+        await syncFreelancer(freelancer);
+
         return res.status(200).json({
             success: true,
             message: "Freelancer updated successfully",
@@ -94,6 +97,7 @@ async function addWork(req, res) {
             { new: true, runValidators: true }
         ).select("-password");
         if (!freelancer) return res.status(404).json({ success: false, message: "Freelancer not found" });
+        await syncFreelancer(freelancer);
         res.status(201).json({ success: true, freelancer });
     } catch (error) {
         console.error("Add work error:", error);
@@ -109,6 +113,7 @@ async function deleteWork(req, res) {
             { new: true }
         ).select("-password");
         if (!freelancer) return res.status(404).json({ success: false, message: "Work not found" });
+        await syncFreelancer(freelancer);
         res.status(200).json({ success: true, freelancer });
     } catch (error) {
         console.error("Delete work error:", error);
@@ -152,6 +157,8 @@ async function updateWork(req, res) {
         if (!freelancer) {
             return res.status(404).json({ success: false, message: "Work not found" });
         }
+
+        await syncFreelancer(freelancer);
 
         res.status(200).json({ success: true, freelancer });
     } catch (error) {
