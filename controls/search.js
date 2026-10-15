@@ -97,6 +97,11 @@ function buildSearchOptions(query, kind) {
     };
 }
 
+const HIGHLIGHT_FIELDS = {
+    freelancers: ["name", "title", "skills", "bio"],
+    jobs: ["title", "description", "skills"],
+};
+
 async function searchIndex(req, res, indexName) {
     let parsed;
     try {
@@ -106,15 +111,23 @@ async function searchIndex(req, res, indexName) {
     }
 
     try {
-        const result = await client.index(indexName).search(parsed.q, parsed.options);
-        const total = result.estimatedTotalHits ?? result.hits.length;
+        const result = await client.index(indexName).search(parsed.q, {
+            ...parsed.options,
+            attributesToHighlight: HIGHLIGHT_FIELDS[indexName] ?? ["*"],
+            highlightPreTag: "[[hl]]",
+            highlightPostTag: "[[/hl]]",
+        });
+
+        const total =
+            result.totalHits ?? result.estimatedTotalHits ?? result.hits.length;
+
         return res.status(200).json({
             success: true,
-            [indexName]: result.hits,
+            [indexName]: result.hits, // كل hit فيه _formatted
             page: parsed.page,
             limit: parsed.limit,
             total,
-            totalPages: Math.ceil(total / parsed.limit),
+            totalPages: result.totalPages ?? Math.ceil(total / parsed.limit),
         });
     } catch (error) {
         console.error(`Meilisearch ${indexName} search failed:`, error);
