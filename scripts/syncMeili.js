@@ -86,13 +86,22 @@ async function sync() {
     return counts;
 }
 
-sync()
-    .catch((error) => {
+async function runSync() {
+    try {
+        await sync();
+    } catch (error) {
         console.error("Meilisearch full sync failed:", error);
         process.exitCode = 1;
-    })
-    .finally(async () => {
-        if (mongoose.connection.readyState !== 0) {
-            await mongoose.disconnect();
+    } finally {
+        try {
+            if (mongoose.connection.readyState !== 0) {
+                await mongoose.disconnect();
+            }
+        } catch (error) {
+            console.error("Failed to disconnect from MongoDB after Meilisearch sync:", error);
+            process.exitCode = 1;
         }
-    });
+    }
+}
+
+runSync();

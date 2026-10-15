@@ -72,8 +72,6 @@ function buildSearchOptions(query, kind) {
         ? {
             "rate:asc": "rate:asc",
             "rate:desc": "rate:desc",
-            "rating:asc": "rating:asc",
-            "rating:desc": "rating:desc",
         }
         : {
             "budget:asc": "budget:asc",
