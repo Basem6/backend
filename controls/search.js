@@ -133,7 +133,7 @@ async function searchIndex(req, res, indexName) {
         console.error(`Meilisearch ${indexName} search failed:`, error);
         return res.status(503).json({ success: false, message: "Search is temporarily unavailable" });
     }
-}
+}  
 
 async function searchFreelancers(req, res) {
     return searchIndex(req, res, "freelancers");
