@@ -24,6 +24,7 @@
     "jsonwebtoken": "^9.0.3",
     "meilisearch": "^0.62.0",
     "mongoose": "^9.8.0",
+    "pg": "^8.23.1",
     "resend": "^6.32.1",
     "socket.io": "^4.8.3"
   },
